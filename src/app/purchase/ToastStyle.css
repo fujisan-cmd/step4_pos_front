@@ -1,0 +1,50 @@
+/* ToastStyle.css */
+.toast-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translateX(100%);
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0 !important; /* 明るめの背景色 */
+    color: #333 !important;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    font-family: 'Segoe UI', sans-serif;
+    transition: transform 0.4s ease-out;
+}
+
+.toast-container.Toastify__toast--enter-done {
+  transform: translateX(-50%);
+}
+
+.custom-toast {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+}
+
+.toast-message {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.toast-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.toast-button:hover {
+    background-color: #0056b3;
+}
