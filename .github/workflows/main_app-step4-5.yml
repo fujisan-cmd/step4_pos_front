@@ -38,8 +38,12 @@ jobs:
           cp -r ./.next/standalone/. ./deploy
           cp -r ./.next/static/. ./deploy/.next/static
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./deploy -r # 追加
+      - name: Zip artifact for deployment # 修正
+        run: |
+          cd deploy
+          zip -r ../release.zip .
+          cd ..
+        #run: zip release.zip ./deploy -r
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
