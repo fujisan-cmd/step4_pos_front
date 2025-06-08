@@ -1,7 +1,7 @@
 export default async function fetchAllItems(json) {
     console.log(json);
     const res = await fetch(
-        process.env.API_ENDPOINT + '/purchase',
+        process.env.NEXT_PUBLIC_API_ENDPOINT + '/purchase',
         {
             method: "POST",
             headers: { "Content-Type": "application/json" },
