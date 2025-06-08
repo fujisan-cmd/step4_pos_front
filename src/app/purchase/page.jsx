@@ -13,6 +13,10 @@ export default function Page(){
     const [ItemList, setItemList] = useState([]);
     const [JsonBody, setJsonBody] = useState([]);
 
+    useEffect(() => {
+    console.log("API Endpoint:", process.env.NEXT_PUBLIC_API_ENDPOINT);
+    }, []);
+
     const handleRead = () => {
         const fetchAndSetItem = async () => {
             const itemData = await fetchItem(code);
