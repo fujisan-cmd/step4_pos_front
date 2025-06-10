@@ -2,8 +2,8 @@
 .toast-container {
     position: fixed;
     left: 50%;
-    /* transform: translateX(-50%) translateY(100%); */
-    /* transition: transform 0.4s ease-out; */
+    transform: translateX(-50%);
+    transition: transform 0.4s ease-out;
 
     display: flex !important;
     justify-content: center;
@@ -15,14 +15,6 @@
     padding: 16px;
     font-family: 'Segoe UI', sans-serif;
 }
-
-/* @keyframes slideUp {
-  from { transform: translateX(-50%) translateY(100%); }
-  to   { transform: translateX(-50%) translateY(0); }
-}
-.toast-container.Toastify__toast--enter {
-  animation: slideUp 0.4s ease-out forwards;
-} */
 
 .custom-toast {
     display: flex;
