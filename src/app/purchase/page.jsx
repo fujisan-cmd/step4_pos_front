@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from "react";
+import { BrowserMultiFormatReader } from '@zxing/library';
 import { ToastContainer } from "react-toastify";
 import fetchItem from "./fetchItem";
 import fetchAllItems from "./fetchAllItems";
@@ -7,19 +8,59 @@ import popup from "./popup";
 
 export default function Page(){
     const [id, setID] = useState('');
-    const [code, setCode] = useState('');
+    const [scannedCode, setScannedCode] = useState('');
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const [ItemList, setItemList] = useState([]);
     const [JsonBody, setJsonBody] = useState([]);
 
-    useEffect(() => {
-    console.log("API Endpoint:", process.env.NEXT_PUBLIC_API_ENDPOINT);
-    }, []);
+    const videoRef = useRef(null);
+    const [isScanning, setIsScanning] = useState(false); // カメラが起動しているかを判定するフラグ
+
+    const startScan = async () => {
+        if (isScanning) return; // カメラの2重起動防止
+
+        setIsScanning(true);
+        const reader = new BrowserMultiFormatReader();
+
+        try{
+            /* 
+                decodeFromVideoDevice( camera, display, callback )
+                    camera: 使用するカメラ、nullなら自動で割り当て
+                    display: 画像を表示する場所
+                    callback: 読み取りが成功/失敗したときの動作を記述
+            */
+            await reader.decodeFromVideoDevice(null, videoRef.current, async (result, error) => {
+                if (result) {                         // 読み取りが成功したらresultが返る
+                    const code = result.getText();
+                    setScannedCode(code);
+
+                    reader.reset(); // カメラを終了する
+                    setIsScanning(false);
+
+                    // ここから商品DB検索
+                    const itemData = await fetchItem(code);
+                    if (itemData.error) {
+                        setName('該当する商品がありません');
+                        setPrice('');
+                        return;
+                    }
+
+                    setID(itemData.product_id);
+                    setName(itemData.name);
+                    setPrice(itemData.price);
+                    // ここまで商品DB検索
+                }
+            });
+        } catch (err){
+            console.error('カメラの使用中にエラー:', err);
+            setIsScanning(false);
+        }
+    };
 
     const handleRead = () => {
         const fetchAndSetItem = async () => {
-            const itemData = await fetchItem(code);
+            const itemData = await fetchItem(scannedCode);
             // 例外処理
             if (itemData.error){
                 setName('該当する商品がありません');
@@ -38,9 +79,8 @@ export default function Page(){
     };
 
     const handleAdd = () => {
-        // 不正な入力の場合は処理を実行しない
         if (name === '該当する商品がありません' || price === ''){
-            return;
+            return; // 不正な入力の場合は処理を実行しない
         }
 
         // 画面に表示するデータ
@@ -50,7 +90,7 @@ export default function Page(){
         // APIに渡すデータ
         const newRecord = {
             product_id: id,
-            barcode: code,
+            barcode: scannedCode,
             product_name: name,
             price: price
         };
@@ -60,7 +100,7 @@ export default function Page(){
 
         // コード、名称、価格は空欄にする
         setID('');
-        setCode('');
+        setScannedCode('');
         setName('');
         setPrice('');
     };
@@ -76,9 +116,10 @@ export default function Page(){
             const result = await fetchAllItems(requestBody);
             console.log(result);
             console.log('successfully submitted!');
+
+            popup(result.total_with_tax, result.total_wo_tax);
         };
         submitAllItems();
-        popup();
         setItemList([]);
         setJsonBody([]);
     };
@@ -86,19 +127,23 @@ export default function Page(){
     return (
         <>
         <ToastContainer></ToastContainer>
-        <div className="max-w-md mx-auto p-4 border rounded-xl shadow-md bg-white sm:w-full">
-            <button className="w-full bg-blue-200 hover:bg-blue-300 font-bold py-2 px-4 rounded mb-4">
+        <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto p-4 border rounded-xl shadow-md bg-white w-full">
+            <button onClick={startScan} className="w-full bg-blue-200 hover:bg-blue-300 font-bold py-2 px-4 rounded mb-4">
                 スキャン（カメラ）
             </button>
+            <div>
+                <video ref={videoRef}/>
+            </div>
+
             <button onClick={handleRead} className="w-full bg-blue-200 hover:bg-blue-300 font-bold py-2 px-4 rounded mb-4">
-                バーコード読み込み（手動）
+                バーコード読み込み(カメラが使えないとき)
             </button>
 
             <input
                 type="text"
                 placeholder="12345678901"
-                value={code} 
-                onChange={(e)=> setCode(e.target.value)}
+                value={scannedCode} 
+                onChange={(e)=> setScannedCode(e.target.value)}
                 className="w-full border px-3 py-2 mb-2 rounded"
             />
             <input
